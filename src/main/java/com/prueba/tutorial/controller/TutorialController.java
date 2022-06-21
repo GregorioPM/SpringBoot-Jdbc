@@ -9,7 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -22,8 +24,26 @@ public class TutorialController {
     private TutorialMapper tutorialMapper;
 
     @GetMapping("/tutorials")
-    public ResponseEntity<?> getAll(){
-        return new ResponseEntity<>(tutorialRepository.findAll(),HttpStatus.OK);
+    public ResponseEntity<?> getAll(@RequestParam(required = false) String title){
+        HashMap<String, String> mapResponse = new HashMap<>();
+        try {
+            List<TutorialDto> tutorialDtos = new ArrayList<TutorialDto>();
+            if(title == null){
+                tutorialRepository.findAll().forEach(tutorialDtos::add);
+            }else{
+                tutorialRepository.findByTitleContaining(title).forEach(tutorialDtos::add);
+            }
+            if(tutorialDtos.isEmpty()){
+                mapResponse.put("message", title +" No coincide con ningun titulo");
+                mapResponse.put("status_code", "204");
+                return new ResponseEntity<>(mapResponse,HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(tutorialDtos,HttpStatus.OK);
+        }catch (Exception e){
+            mapResponse.put("message","Ha ocurrido un error interno");
+            mapResponse.put("status_code", "500");
+            return new ResponseEntity<>(mapResponse,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping("/tutorials")
@@ -36,6 +56,8 @@ public class TutorialController {
         }catch (Exception e){
             HashMap<String, String> mapResponse = new HashMap<>();
             mapResponse.put("message","Se a generado un error interno al guardar un tutorial");
+            mapResponse.put("status_code", "500");
+            mapResponse.put("error", String.valueOf(e));
             return new ResponseEntity<>(mapResponse,HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -52,6 +74,7 @@ public class TutorialController {
         }else{
             HashMap<String, String> mapResponse = new HashMap<>();
             mapResponse.put("message","No se encontro el tutorial");
+            mapResponse.put("status_code", "404");
             return  new ResponseEntity<>(mapResponse,HttpStatus.NOT_FOUND);
         }
 
@@ -65,6 +88,7 @@ public class TutorialController {
         }else {
             HashMap<String, String> mapResponse = new HashMap<>();
             mapResponse.put("message","No se encontro el tutorial");
+            mapResponse.put("status_code", "404");
             return new ResponseEntity<>(mapResponse,HttpStatus.NOT_FOUND);
         }
     }
@@ -76,9 +100,11 @@ public class TutorialController {
         if(tutorialDto!=null){
             tutorialRepository.deleteById(id);
             mapResponse.put("message","Tutorial "+ tutorialDto.getTitle() +" ha sido borrado correctamete");
+            mapResponse.put("status_code", "200");
             return new ResponseEntity<>(mapResponse , HttpStatus.OK);
         }else {
             mapResponse.put("message","Tutorial no se encuentra");
+            mapResponse.put("status_code", "404");
             return new ResponseEntity<>(mapResponse,HttpStatus.NOT_FOUND);
         }
     }
@@ -89,11 +115,33 @@ public class TutorialController {
         try {
             int rows = tutorialRepository.deleteAll();
             mapResponse.put("message","Se eliminaron "+ rows+" Tutoriales correctamente");
+            mapResponse.put("status_code", "200");
             return new ResponseEntity<>(mapResponse,HttpStatus.OK);
         }catch (Exception e){
             mapResponse.put("message","No se logro eliminar los tutoriales por un error interno");
+            mapResponse.put("status_code", "500");
             return new ResponseEntity<>(mapResponse,HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
+
+    @GetMapping("/tutorials/published")
+    public ResponseEntity<?> getAllTutorialsPublished(){
+        HashMap<String, String> mapResponse = new HashMap<>();
+        try {
+            List<TutorialDto> tutorialDtos = tutorialRepository.findByIdPublished(true);
+            if(!tutorialDtos.isEmpty()){
+                return new ResponseEntity<>(tutorialDtos,HttpStatus.OK);
+            }else {
+                mapResponse.put("message","No se encontraron tutoriales publicados");
+                mapResponse.put("status_code", "204");
+                return new ResponseEntity<>(mapResponse,HttpStatus.NO_CONTENT);
+            }
+        }catch (Exception e){
+            mapResponse.put("message", "Se genero un error interno");
+            mapResponse.put("status_code", "500");
+            return new ResponseEntity<>(mapResponse,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

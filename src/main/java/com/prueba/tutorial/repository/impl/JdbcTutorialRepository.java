@@ -63,12 +63,24 @@ public class JdbcTutorialRepository implements ITutorialRepository {
 
     @Override
     public List<TutorialDto> findByIdPublished(boolean published) {
-        return null;
+
+        List<Tutorial> tutorials= jdbcTemplate.query("SELECT * FROM tutorials WHERE published=?",BeanPropertyRowMapper.newInstance(Tutorial.class),published);
+
+        return tutorials.stream()
+                .map(t->tutorialMapper.toModel(t))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<TutorialDto> findByTitleContaining(String title) {
-        return null;
+
+        List<Tutorial> tutorials= jdbcTemplate.query("SELECT * FROM tutorials WHERE title ILIKE '%" + title + "%'",BeanPropertyRowMapper.newInstance(Tutorial.class));
+        String q = "SELECT * from tutorials WHERE title ILIKE '%" + title + "%'";
+        //return jdbcTemplate.query(q, BeanPropertyRowMapper.newInstance(Tutorial.class));
+
+        return tutorials.stream()
+                .map(t-> tutorialMapper.toModel(t))
+                .collect(Collectors.toList());
     }
 
     @Override
