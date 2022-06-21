@@ -14,5 +14,5 @@ public interface ITutorialRepository {
     List<TutorialDto> findByIdPublished(boolean published);
     List<TutorialDto> findByTitleContaining(String title);
     int ultimoId();
-    void deleteAll();
+    int deleteAll();
 }

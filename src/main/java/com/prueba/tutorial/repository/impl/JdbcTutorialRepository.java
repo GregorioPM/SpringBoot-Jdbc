@@ -72,8 +72,8 @@ public class JdbcTutorialRepository implements ITutorialRepository {
     }
 
     @Override
-    public void deleteAll() {
-
+    public int deleteAll() {
+        return  jdbcTemplate.update("DELETE FROM tutorials");
     }
 
     //SELECT MAX(id_tabla) AS id FROM tabla

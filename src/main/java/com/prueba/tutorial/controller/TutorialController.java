@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+
 @RestController
 @RequestMapping("/api")
 public class TutorialController {
@@ -32,7 +34,9 @@ public class TutorialController {
             TutorialDto tutorialDto = tutorialRepository.findById(f);
             return new ResponseEntity<>(tutorialDto, HttpStatus.CREATED);
         }catch (Exception e){
-            return new ResponseEntity<>(null,HttpStatus.INTERNAL_SERVER_ERROR);
+            HashMap<String, String> mapResponse = new HashMap<>();
+            mapResponse.put("message","Se a generado un error interno al guardar un tutorial");
+            return new ResponseEntity<>(mapResponse,HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -46,7 +50,9 @@ public class TutorialController {
             tutorialFind.setPublished(tutorial.isPublished());
             return  new ResponseEntity<>(tutorialRepository.update(tutorialFind),HttpStatus.OK);
         }else{
-            return  new ResponseEntity<>("No se encontro el tutorial",HttpStatus.NOT_FOUND);
+            HashMap<String, String> mapResponse = new HashMap<>();
+            mapResponse.put("message","No se encontro el tutorial");
+            return  new ResponseEntity<>(mapResponse,HttpStatus.NOT_FOUND);
         }
 
     }
@@ -57,19 +63,37 @@ public class TutorialController {
         if(tutorialDto!=null){
             return  new ResponseEntity<>(tutorialDto,HttpStatus.OK);
         }else {
-            return new ResponseEntity<>("No se encontro el tutorial",HttpStatus.NOT_FOUND);
+            HashMap<String, String> mapResponse = new HashMap<>();
+            mapResponse.put("message","No se encontro el tutorial");
+            return new ResponseEntity<>(mapResponse,HttpStatus.NOT_FOUND);
         }
     }
 
     @DeleteMapping("/tutorials/{id}")
     public ResponseEntity<?> deleteById(@PathVariable("id") Long id){
-
+        HashMap<String, String> mapResponse = new HashMap<>();
         TutorialDto tutorialDto = tutorialRepository.findById(id);
         if(tutorialDto!=null){
             tutorialRepository.deleteById(id);
-            return new ResponseEntity<>("Tutorial "+ tutorialDto.getTitle() +" borrado correctamete",HttpStatus.OK);
+            mapResponse.put("message","Tutorial "+ tutorialDto.getTitle() +" ha sido borrado correctamete");
+            return new ResponseEntity<>(mapResponse , HttpStatus.OK);
         }else {
-            return new ResponseEntity<>("Tutorial no se encuentra",HttpStatus.NOT_FOUND);
+            mapResponse.put("message","Tutorial no se encuentra");
+            return new ResponseEntity<>(mapResponse,HttpStatus.NOT_FOUND);
         }
+    }
+
+    @DeleteMapping("/tutorials")
+    public ResponseEntity<?> deleteAll(){
+        HashMap<String, String> mapResponse = new HashMap<>();
+        try {
+            int rows = tutorialRepository.deleteAll();
+            mapResponse.put("message","Se eliminaron "+ rows+" Tutoriales correctamente");
+            return new ResponseEntity<>(mapResponse,HttpStatus.OK);
+        }catch (Exception e){
+            mapResponse.put("message","No se logro eliminar los tutoriales por un error interno");
+            return new ResponseEntity<>(mapResponse,HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 }
