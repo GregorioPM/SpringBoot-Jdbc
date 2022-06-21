@@ -29,7 +29,10 @@ public class JdbcTutorialRepository implements ITutorialRepository {
 
     @Override
     public TutorialDto update(Tutorial tutorial) {
-        return null;
+        jdbcTemplate.update("UPDATE tutorials SET title=?, description=?, published=? WHERE id=?",
+                new Object[]{tutorial.getTitle(),tutorial.getDescription(),tutorial.isPublished(),tutorial.getId()});
+
+        return findById(tutorial.getId());
     }
 
     @Override
