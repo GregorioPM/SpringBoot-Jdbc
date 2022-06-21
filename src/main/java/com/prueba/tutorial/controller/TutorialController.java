@@ -19,6 +19,11 @@ public class TutorialController {
     @Autowired
     private TutorialMapper tutorialMapper;
 
+    @GetMapping("/tutorials")
+    public ResponseEntity<?> getAll(){
+        return new ResponseEntity<>(tutorialRepository.findAll(),HttpStatus.OK);
+    }
+
     @PostMapping("/tutorials")
     public ResponseEntity<?> save(@RequestBody Tutorial tutorial){
         try{
@@ -53,6 +58,18 @@ public class TutorialController {
             return  new ResponseEntity<>(tutorialDto,HttpStatus.OK);
         }else {
             return new ResponseEntity<>("No se encontro el tutorial",HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @DeleteMapping("/tutorials/{id}")
+    public ResponseEntity<?> deleteById(@PathVariable("id") Long id){
+
+        TutorialDto tutorialDto = tutorialRepository.findById(id);
+        if(tutorialDto!=null){
+            tutorialRepository.deleteById(id);
+            return new ResponseEntity<>("Tutorial "+ tutorialDto.getTitle() +" borrado correctamete",HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>("Tutorial no se encuentra",HttpStatus.NOT_FOUND);
         }
     }
 }

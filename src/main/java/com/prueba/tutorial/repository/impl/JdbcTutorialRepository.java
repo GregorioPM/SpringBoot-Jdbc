@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class JdbcTutorialRepository implements ITutorialRepository {
@@ -48,12 +49,16 @@ public class JdbcTutorialRepository implements ITutorialRepository {
 
     @Override
     public void deleteById(Long id) {
-
+        jdbcTemplate.update("DELETE FROM tutorials WHERE id=?",id);
     }
 
     @Override
     public List<TutorialDto> findAll() {
-        return null;
+        List<Tutorial> tutoriales = jdbcTemplate.query("SELECT * FROM tutorials",BeanPropertyRowMapper.newInstance(Tutorial.class));
+
+        return tutoriales.stream()
+                .map(t-> tutorialMapper.toModel(t) )
+                .collect(Collectors.toList());
     }
 
     @Override
